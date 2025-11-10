@@ -6,5 +6,6 @@
   </div>
   <router-view />
 </template>
+<style scoped>
 
-<style scoped></style>
+</style>
