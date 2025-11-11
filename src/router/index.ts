@@ -8,6 +8,19 @@ const router = createRouter({
       path: '/login',
       name: 'Login',
       component: login
+    },
+    {
+      path: '/',
+      redirect: '/login'
+    },
+    {
+      path: '/:pathMatch(.*)*',
+      redirect: '/login'
+    },
+    {
+      path: '/3D',
+      name: '3D',
+      component: () => import('@/views/3D/3D.vue')
     }
   ],
 })
