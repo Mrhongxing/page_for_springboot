@@ -18,9 +18,9 @@ const router = createRouter({
       redirect: '/login'
     },
     {
-      path: '/3D',
-      name: '3D',
-      component: () => import('@/views/3D/3D.vue')
+      path: '/car',
+      name: 'car',
+      component: () => import('@/views/car/car.vue')
     }
   ],
 })
