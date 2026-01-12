@@ -2,7 +2,7 @@
     import { ref } from 'vue';
     import { useRouter } from 'vue-router';
     import apiClient from '@/apiClient/apiClient';
-import axios from 'axios';
+    import axios from 'axios';
 
     const router = useRouter();
     const loginform = ref<HTMLElement | null>(null);
@@ -34,7 +34,7 @@ import axios from 'axios';
     async function handleSubmit() {
         // Handle login logic here
         try {
-            const response = await axios.post('http://localhost:8080/apiForChargingStation/user/login', {
+            const response = await apiClient.post('http://localhost:8080/apiForChargingStation/user/login', {
                 username: LoginForm.username,
                 password: LoginForm.password
             });
@@ -42,11 +42,12 @@ import axios from 'axios';
                 localStorage.setItem('token', 'Bearer ' + response.data.token);
                 alert('登录成功！');
                 console.log('Login successful:', response.data);
-                router.push('/3D');
+                router.push('/car');
             }else{
                 alert("用户名或密码错误");
             }
         } catch (error) {
+            alert("服务器连接异常，请稍后重试");
             console.error('Login failed:', error);
         }
     }
