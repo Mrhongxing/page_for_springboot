@@ -13,8 +13,9 @@ import { useRoute, useRouter } from 'vue-router'
 </script>
 <template>
   <div class="nav-bar">
-    <router-link to="/login">Go to Login Page</router-link>
-    <router-link to="/3D">Go to Register Page</router-link>
+    <router-link to="/car">主页</router-link>
+    <router-link to="/user">用户</router-link>
+    <router-link to="/navigation">导航</router-link>
   </div>
   <router-view :class="routerclass"/>
   <!-- 隐藏在视图外的SVG滤镜 -->
@@ -29,6 +30,13 @@ import { useRoute, useRouter } from 'vue-router'
   </svg>
 </template>
 <style scoped>
+  div[class*="router-"]{
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+  /* 登录页面 */
   .router-Login {
     background-color: #f0f8ff;
     height: 100vh;
@@ -38,7 +46,8 @@ import { useRoute, useRouter } from 'vue-router'
     top: 0;
     left: 0;
     z-index: 1000;
-  /* 导航栏（移动端为底部充满）*/}
+  }
+  /* 导航栏（移动端为底部充满）*/
   .nav-bar {
     position: fixed;
     bottom: 0;
@@ -55,7 +64,6 @@ import { useRoute, useRouter } from 'vue-router'
     z-index: 1000;
     border-radius: 0; /* 手机端两侧不圆角，充满底部 */
   }
-
   /* 链接样式 */
   .nav-bar a {
     display: inline-flex;
@@ -77,7 +85,26 @@ import { useRoute, useRouter } from 'vue-router'
     background: rgba(255, 255, 255, 0.1);
     color: #1f3a93;
   }
-
+  /*黑夜模式适配 */
+  @media (prefers-color-scheme: dark) {
+    .router-Login {
+      background-color: #1e1e1e;
+    }
+    .nav-bar {
+      background: rgba(30, 30, 30, 0.3);
+      box-shadow: 0 -1px 6px rgba(255, 255, 255, 0.06);
+    }
+    .nav-bar a {
+      color: #ddd;
+    }
+    .nav-bar a:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+    .nav-bar a.router-link-active {
+      background: rgba(255, 255, 255, 0.1);
+      color: #4a90e2;
+    }
+  }
   /* 桌面端：底部居中，两端圆角 */
   @media (min-width: 768px) {
     .nav-bar {
@@ -90,14 +117,4 @@ import { useRoute, useRouter } from 'vue-router'
       box-shadow: 0 10px 30px rgba(20, 30, 40, 0.12);
     }
   }
-  .router-3D {
-    background-color: #fff0f5;
-    height: 100vh;
-    width: 100vw;
-    padding: 20px;
-    position: fixed;
-    top: 0;
-    left: 0;
-  }
-
 </style>

@@ -3,6 +3,7 @@
     import { useRouter } from 'vue-router';
     import apiClient from '@/apiClient/apiClient';
     import axios from 'axios';
+    import { useUserInfoStore } from '@/stores/UserInfo';
 
     const router = useRouter();
     const loginform = ref<HTMLElement | null>(null);
@@ -42,6 +43,8 @@
                 localStorage.setItem('token', 'Bearer ' + response.data.token);
                 alert('登录成功！');
                 console.log('Login successful:', response.data);
+                const userInfoStore = useUserInfoStore();
+                userInfoStore.setUserInfo(response.data);
                 router.push('/car');
             }else{
                 alert("用户名或密码错误");
@@ -108,7 +111,7 @@
         </div>
     </div>
 </template>
-<style>
+<style scoped>
     @media (min-width: 768px) {
         .login{
             background-color: #fff;
@@ -192,4 +195,21 @@ button {
 button:hover {
     background-color: #218838;
 }
+@media (prefers-color-scheme: dark) {
+    template{
+        background-color: #222;
+    }
+    .login{
+        background-color: #333;
+    }
+    .loginform, .registerform {
+        background-color: #444;
+        border-color: #555;
+        color: #eee;
+    }
+    .loadbutton {
+        color: #66b2ff;
+    }
+}
+
 </style>

@@ -2,61 +2,51 @@ import { defineStore } from 'pinia'
 
 export const useUserInfoStore = defineStore('userInfo', {
   state: () => ({
-    user_id: 0,
+    name: '',
     email: '',
-    petName: '',
-    phone:'',
-    userImg:'',
-    carVin:'',
-    carType:'',
-    userRole:0,
-    token:'',
+    phone: '',
+    role: 1,
+    token: '',
+    car_type: '',
+    car_brand: ''
   }),
   getters: {
     userInfo: (state) => ({
-        user_id: state.user_id,
-        email:state.email,
-        petName:state.petName,
-        phone:state.phone,
-        userImg:state.userImg,
-        carVin:state.carVin,
-        carType:state.carType,
-        userRole:state.userRole,
-        token:state.token,
+        ...state
     })
   },
   actions: {
     setUserInfo(userInfo: {
-      user_id: number,
+      name: string,
       email: string,
-      petName: string,
-      phone:string,
-      userImg:string,
-      carVin:string,
-      carType:string,
-      userRole:number,
-      token:string,
+      phone: string,
+      role: number,
+      token: string,
+      car_type: string,
+      car_brand: string
     }) {
-    this.user_id = userInfo.user_id
-    this.email = userInfo.email
-    this.petName = userInfo.petName
-    this.phone = userInfo.phone
-    this.userImg = userInfo.userImg
-    this.carVin = userInfo.carVin
-    this.carType = userInfo.carType
-    this.userRole = userInfo.userRole
-    this.token = userInfo.token 
+      this.name = userInfo.name
+      this.email = userInfo.email
+      this.phone = userInfo.phone
+      this.role = userInfo.role
+      this.token = userInfo.token
+      this.car_type = userInfo.car_type
+      this.car_brand = userInfo.car_brand
     },
     clearUserInfo() {
-      this.user_id = 0
+      this.name = ''
       this.email = ''
-      this.petName = ''
       this.phone = ''
-      this.userImg = ''
-      this.carVin = ''
-      this.carType = ''
-      this.userRole = 0
+      this.role = 1
+      this.car_brand = ''
+      this.car_type = ''
       this.token = ''
     }
+  },
+  // 添加持久化配置
+  persist: {
+    key: 'user-info-storage',  // 自定义存储的key
+    storage: localStorage,      // 使用 localStorage
+    pick: ['name', 'email', 'phone', 'role', 'token', 'car_type', 'car_brand'] // 指定需要持久化的字段
   }
-})  
+})
