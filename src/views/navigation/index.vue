@@ -2,22 +2,39 @@
 import AMapLoader from '@amap/amap-jsapi-loader';
 import { onMounted, onUnmounted, ref } from 'vue';
 import { useCounterStore } from '@/stores/counter';
+import { useNavigationStore } from '@/stores/navigateStore';
 let map: any = null;
 const markerContent = `<div class="custom-content-marker">
 <img src="//a.amap.com/jsapi_demos/static/demo-center/icons/dir-via-marker.png">
 <div class="close-btn" onclick="clearMarker()">X</div>
 </div>`
 let amap: any = null;
+let driving:any = null;
+let placeSearch = null;
 const searchInput = ref('');
 let searchResults: any = null;
-function search() {
-    AMapLoader.load({
-        key: "5306e7844bae04c765044d516c2f3b4d", // 申请好的Web端开发者Key，首次调用 load 时必填
-        version: "2.0", // 指定要加载的 JSAPI 的版本，缺省时默认为 1.4.15
-        plugins: ["AMap.Scale"], //需要使用的的插件列表，如比例尺'AMap.Scale'，支持添加多个如：['...','...']
-    }).then((AMap) => {
-        AMap.plugin(["AMap.PlaceSearch"], function () {
-            const placeSearch = new AMap.PlaceSearch({
+function search(data: any) {
+        map.clearMap();
+        if(driving){
+            driving.clear();
+        }
+        if (map) {
+            map.setCenter(useCounterStore().localPlace);
+            map.setZoom(15); // 放大到合适级别
+        }
+        const positionMark = new amap.LngLat(useCounterStore().localPlace[0], useCounterStore().localPlace[1]); //Marker 经纬度
+        const marker = new amap.Marker({
+            position: positionMark, //Marker 经纬度
+            content: markerContent, //将 html 传给 content
+            offset: new amap.Pixel(-13, -30), //以 icon 的 [center bottom] 为原点
+        });
+        map.add(marker);
+        const traffic = new amap.TileLayer.Traffic({
+            autoRefresh: true, //是否自动刷新，默认为false
+            interval: 180, //刷新间隔，默认180s
+        });
+        amap.plugin(["AMap.PlaceSearch"], function () {
+            placeSearch = new amap.PlaceSearch({
                 pageSize: 5, //单页显示结果条数
                 pageIndex: 1, //页码
                 city: useCounterStore().provinceName, //兴趣点城市
@@ -30,11 +47,10 @@ function search() {
             //AMap.event.addListener(placeSearch, "complete", keywordSearch_CallBack); //返回结果
             /* placeSearch.search('西域'); //关键字查询 */
             //placeSearch.search(searchInput.value, function (status, result) { console.log(status, result) });  //使用插件搜索关键字并查看结果
-            placeSearch.searchNearBy(searchInput.value,useCounterStore().localPlace, function (status, result) { console.log(status, result) });  //使用插件搜索关键字并查看结果
+            console.log('搜索内容:', searchInput.value);
+            placeSearch.searchNearBy(searchInput.value, useCounterStore().localPlace, 5000, function (status: any, result: any) { map.setCenter([result.poiList.pois[0].location.lng, result.poiList.pois[0].location.lat]); });  //使用插件搜索关键字并查看结果
         });
-    }).catch((e) => {
-        console.log(e);
-    });
+   
 }
 onMounted(() => {
     let latitude = 39.90923; // 纬度
@@ -45,7 +61,7 @@ onMounted(() => {
     AMapLoader.load({
         key: "5306e7844bae04c765044d516c2f3b4d", // 申请好的Web端开发者Key，首次调用 load 时必填
         version: "2.0", // 指定要加载的 JSAPI 的版本，缺省时默认为 1.4.15
-        plugins: ["AMap.Scale", "AMap.ToolBar", "AMap.Geocoder", "AMap.Marker", "AMap.Traffic","AMap.CitySearch","AMap.Heatmap"], //需要使用的的插件列表，如比例尺'AMap.Scale'，支持添加多个如：['...','...']
+        plugins: ["AMap.Driving", "AMap.Scale", "AMap.ToolBar", "AMap.Geocoder", "AMap.Marker", "AMap.Traffic", "AMap.CitySearch", "AMap.Heatmap"], //需要使用的的插件列表，如比例尺'AMap.Scale'，支持添加多个如：['...','...']
     }).then((AMap) => {
         amap = AMap;
         map = new AMap.Map("container", {
@@ -98,16 +114,48 @@ onMounted(() => {
                                 // 提取城市信息（处理直辖市特殊情况）
                                 /* let cityName = addressComponent.city; */
                                 useCounterStore().province = addressComponent.province;
-                                // 如果是直辖市（北京、上海、天津、重庆），city字段可能为空，改用province
-                                /* if (!cityName || cityName.length === 0) {
-                                    cityName = addressComponent.province;
+                                if (useNavigationStore().from === 'car') {
+                                    useNavigationStore().clearTrigger();
+                                    AMap.plugin(["AMap.PlaceSearch"], function () {
+                                        placeSearch = new AMap.PlaceSearch({
+                                            pageSize: 5, //单页显示结果条数
+                                            pageIndex: 1, //页码
+                                            city: useCounterStore().provinceName, //兴趣点城市
+                                            citylimit: true, //是否强制限制在设置的城市内搜索
+                                            //location: useCounterStore().localPlace, //设置周边搜索中心点
+                                            map: map, //展现结果的地图实例
+                                            panel: "my-panel", //参数值为你页面定义容器的 id 值<div id="my-panel"></div>，结果列表将在此容器中进行展示。
+                                            autoFitView: true, //是否自动调整地图视野使绘制的 Marker 点都处于视口的可见范围
+                                        });
+                                        placeSearch.searchNearBy("充电站", useCounterStore().localPlace, 5000, function (status: any, result: any) {
+                                            console.log('附近搜索回调状态:', status);
+                                            console.log('附近搜索结果:', result);
+                                            const startLngLat = [longitude, latitude] //起始点坐标
+                                            const endLngLat = [result.poiList.pois[0].location.lng, result.poiList.pois[0].location.lat] //终点坐标
+                                            //引入和创建驾车规划插件
+                                            AMap.plugin(["AMap.Driving"], function () {
+                                                driving = new AMap.Driving({
+                                                    map: map,
+                                                    panel: "my-panel", //参数值为你页面定义容器的 id 值<div id="my-panel"></div>
+                                                });
+                                                //获取起终点规划线路
+                                                driving.search(startLngLat, endLngLat, function (status: any, result: any) {
+                                                    if (status === "complete") {
+                                                        //status：complete 表示查询成功，no_data 为查询无结果，error 代表查询错误
+                                                        //查询成功时，result 即为对应的驾车导航信息
+                                                        console.log(result);
+                                                    } else {
+                                                        console.log("获取驾车数据失败：" + result);
+                                                    }
+                                                });
+                                            });
+                                        });  //使用插件搜索关键字并查看结果
+                                    })
                                 }
-
-                                console.log('当前城市:', cityName);
-                                console.log('完整地址组件:', addressComponent); */
                             }
                         });
                     });
+
 
                 },
                 // 失败回调
@@ -167,7 +215,7 @@ onUnmounted(() => {
         <div id="my-panel"></div>
         <div class="search">
             <input type="text" v-model="searchInput" placeholder="请输入搜索内容" />
-            <button @click="search">搜索</button>
+            <button @click="search(false)">搜索</button>
         </div>
     </div>
 </template>

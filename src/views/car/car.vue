@@ -2,6 +2,7 @@
     import { onMounted, ref } from 'vue';
     import { useRouter } from 'vue-router';
     import { useUserInfoStore } from '@/stores/UserInfo';
+    import { useNavigationStore } from '@/stores/navigateStore';
     import apiClient from '@/apiClient/apiClient';
     const router = useRouter();
     const userInfoStore = useUserInfoStore();
@@ -19,8 +20,14 @@
             alert("获取车辆图片失败");
         }
     }
+    function Go(){
+        useNavigationStore().setTrigger('car', 'navigate', {
+            destination: 'home'
+        });
+        router.push('/navigation');
+    }
     onMounted(async ()=>{
-        //await getImg();
+        
     })
     
 </script>
@@ -31,7 +38,7 @@
             <img :src="imgurl" alt="车辆图片" class="car-image" />
         </div>
         <div class="button-group">
-            <button class="main-btn" @click="router.push('/navigation')">
+            <button class="main-btn" @click="Go">
                 一键导航
             </button>
             <button class="main-btn" @click="router.push('/charging')">
