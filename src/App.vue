@@ -41,7 +41,6 @@ import { useRoute, useRouter } from 'vue-router'
     background-color: #f0f8ff;
     height: 100vh;
     width: 100vw;
-    padding: 20px;
     position: fixed;
     top: 0;
     left: 0;

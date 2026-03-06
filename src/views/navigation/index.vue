@@ -264,7 +264,10 @@ onUnmounted(() => {
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    width: 320px;
+   
+    overflow: scroll;
+    max-height: 100vh;
+    box-sizing: border-box;
 }
 
 .search {

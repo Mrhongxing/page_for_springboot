@@ -59,7 +59,7 @@
         try {
             const response = await apiClient.post('apiForChargingStation/user/register', LoginForm);
             const responseData = response.data;
-            if(responseData.isSuccess){
+            if(responseData.success){
                 alert('Registration successful!');
             }else{
                 alert('Registration failed: ' + responseData.message);

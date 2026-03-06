@@ -34,20 +34,20 @@
 <template>
     <div class="car-main-page">
         <div class="car-image-container">
-            <div>你好，{{ userInfoStore.userInfo.name }}</div>
+            <div class="welcome-text">你好，{{ userInfoStore.userInfo.name }}</div>
             <img :src="imgurl" alt="车辆图片" class="car-image" />
         </div>
         <div class="button-group">
             <button class="main-btn" @click="Go">
                 一键导航
             </button>
-            <button class="main-btn" @click="router.push('/charging')">
+            <button class="main-btn" @click="router.push('/search')">
                 充电站查询
             </button>
             <button class="main-btn" @click="router.push('/maintenance')">
                 车辆保养
             </button>
-            <button class="main-btn" @click="router.push('/profile')">
+            <button class="main-btn" @click="router.push('/user')">
                 我的信息
             </button>
         </div>
@@ -55,59 +55,139 @@
 </template>
 <style>
 .car-main-page {
+    --glass-bg: rgba(255, 255, 255, 0.58);
+    --glass-bg-strong: rgba(255, 255, 255, 0.72);
+    --glass-border: rgba(255, 255, 255, 0.82);
+    --glass-border-soft: rgba(255, 255, 255, 0.62);
+    --text-main: #151515;
+    --text-soft: #3c3c3c;
+
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 20px;
+    justify-content: center;
+    gap: 24px;
+    padding: 24px 16px;
     box-sizing: border-box;
+    color: var(--text-main);
+    background:
+        radial-gradient(circle at 16% 22%, rgba(255, 255, 255, 0.96), transparent 46%),
+        radial-gradient(circle at 82% 78%, rgba(255, 255, 255, 0.88), transparent 38%),
+        linear-gradient(145deg, #ececec 0%, #dddddd 40%, #d3d3d3 100%);
 }
+
 .car-image-container {
-    
-    width: 100%;
+
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: space-around;
-    font-size: 5vw;
-    img{
-        width: 50%;
-        height: auto;
-        max-width: 600px;
-        border-radius: 10px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
-    }
+    justify-content: center;
+    gap: 20px;
+    padding: 22px;
+    border-radius: 22px;
+    font-size: clamp(1.4rem, 3.8vw, 2.2rem);
+
+    background: linear-gradient(145deg, var(--glass-bg-strong), var(--glass-bg));
+    border: 1px solid var(--glass-border-soft);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.78),
+        0 16px 34px rgba(0, 0, 0, 0.28),
+        0 5px 10px rgba(0, 0, 0, 0.14);
+    backdrop-filter: blur(16px) saturate(120%);
+    -webkit-backdrop-filter: blur(16px) saturate(120%);
 }
+
+.welcome-text {
+    width: 100%;
+    text-align: center;
+    color: var(--text-main);
+    letter-spacing: 0.04em;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.car-image {
+    width: 100%;
+    max-width: 620px;
+    height: auto;
+    border-radius: 16px;
+    border: 1px solid var(--glass-border);
+    box-shadow:
+        0 18px 32px rgba(0, 0, 0, 0.34),
+        0 0 0 1px rgba(255, 255, 255, 0.55);
+}
+
 .button-group {
     display: flex;
     flex-direction: column;
-    width: 90vw;
-    max-width: 400px;
-    margin: 30px auto 0 auto;
-    gap: 16px;
+    width: min(100%, 960px);
+    margin: 0 auto;
+    gap: 14px;
 }
 
 .main-btn {
     width: 100%;
-    padding: 14px 0;
+    padding: 14px 18px;
     font-size: 1.1rem;
-    border: none;
-    border-radius: 8px;
-    background: #1976d2;
-    color: #fff;
-    box-shadow: 0 2px 6px rgba(25, 118, 210, 0.15);
-    transition: background 0.2s;
+    font-weight: 600;
+    border-radius: 12px;
+    border: 1px solid var(--glass-border);
+    color: var(--text-main);
+    background: linear-gradient(140deg, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.45));
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.95),
+        0 10px 22px rgba(0, 0, 0, 0.26);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.main-btn:hover {
+    background: linear-gradient(140deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.58));
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.98),
+        0 12px 24px rgba(0, 0, 0, 0.3);
+}
+
+.main-btn:focus-visible {
+    outline: 2px solid rgba(0, 0, 0, 0.7);
+    outline-offset: 2px;
 }
 
 .main-btn:active {
-    background: #1565c0;
+    transform: translateY(1px) scale(0.995);
+    background: linear-gradient(140deg, rgba(255, 255, 255, 0.65), rgba(255, 255, 255, 0.35));
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.78),
+        0 7px 14px rgba(0, 0, 0, 0.22);
 }
-@media(min-width: 768px){
+
+@media (min-width: 768px) {
+    .car-main-page {
+        padding: 36px 24px;
+    }
+
+    .car-image-container {
+        flex-direction: row;
+        justify-content: space-between;
+        gap: 28px;
+    }
+
+    .welcome-text {
+        width: auto;
+        text-align: left;
+        flex: 1;
+    }
+
+    .car-image {
+        width: 58%;
+        min-width: 360px;
+    }
+
     .button-group {
-    display: flex;
-    flex-direction: row;
-    width: 90vw;
-    max-width: 400px;
-    margin: 30px auto 0 auto;
-    gap: 16px;
-}
+        flex-direction: row;
+        gap: 16px;
+    }
 }
 </style> 
