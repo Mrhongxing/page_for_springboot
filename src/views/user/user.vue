@@ -150,6 +150,12 @@ img.avatar {
         radial-gradient(circle at 82% 78%, rgba(255, 255, 255, 0.88), transparent 38%),
         linear-gradient(145deg, #ececec 0%, #dddddd 40%, #d3d3d3 100%);
     min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    
 }
 
 .profile-header {

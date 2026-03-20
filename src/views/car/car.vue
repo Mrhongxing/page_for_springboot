@@ -44,8 +44,8 @@
             <button class="main-btn" @click="router.push('/search')">
                 充电站查询
             </button>
-            <button class="main-btn" @click="router.push('/maintenance')">
-                车辆保养
+            <button class="main-btn" @click="router.push('/favorites')">
+                我的收藏
             </button>
             <button class="main-btn" @click="router.push('/user')">
                 我的信息

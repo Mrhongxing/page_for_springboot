@@ -31,6 +31,10 @@ const router = createRouter({
       path: '/navigation',
       name: 'navigation',
       component: () => import('@/views/navigation/index.vue')
+    },{
+      path: '/favorites',
+      name: 'favorites',
+      component: () => import('@/views/favorites/index.vue')
     }
   ],
 })
