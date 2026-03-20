@@ -112,7 +112,7 @@
     </div>
 </template>
 <style scoped>
-    @media (min-width: 768px) {
+    @media (min-width: 1000px) {
         .login{
             background-color: #fff;
         }
@@ -168,6 +168,9 @@
         50% { transform: translateX(25vw); }
         100% { transform: translateX(0); }
         }
+        button:hover {
+    background-color: #1565C0;
+}
     }
 
 
@@ -182,19 +185,18 @@ input {
     width: 100%;
     padding: 8px;
     box-sizing: border-box;
+    border-radius: 5px;
 }
 button {
     width: 100%;
     padding: 10px;
-    background-color: #28a745;
+    background-color: #1E88E5;
     color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
 }
-button:hover {
-    background-color: #218838;
-}
+
 @media (prefers-color-scheme: dark) {
     template{
         background-color: #222;
@@ -211,5 +213,59 @@ button:hover {
         color: #66b2ff;
     }
 }
-
+@media (max-width: 999px) {
+    .loginarea{
+        width: 100vw;
+        height: 100vh;
+        position: fixed;
+    }
+    
+    .loginform,.registerform {
+        width: 80%;
+        height: auto;
+        position: absolute;
+        left: 10vw;
+        top: 20vh;
+        border-radius: 10px;
+        padding: 20px;
+        box-sizing: border-box;
+        z-index: 11;
+        background-color: #fff;
+    }
+    .loginform{
+        z-index: 12;
+    }
+    .loginimg{
+        display: none;
+    }
+    .load{
+            animation: spin 2s ease;
+            z-index: 9;
+            border-radius: 10px;
+        }
+        @keyframes spin {
+        0% { translate: translateY(0); }
+        50% { transform: translateY(300px); }
+        100% { transform: translateY(0); }
+        }
+}
+@media(min-height:1080px) and (max-width:768px){
+    .loginimg{
+        display: block;
+        position: absolute;
+        width: 80%;
+        height: 80vw;
+        top: 100px;
+        left: 10vw;
+        border-radius: 10px;
+        overflow: hidden;
+        img{
+            width: 100%;
+            height: 100%;
+        }
+    }
+    .registerform,.loginform{
+        top: calc(100px + 80vw);
+    }
+}
 </style>
