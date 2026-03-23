@@ -5,4 +5,7 @@ div{
     --glass-border-soft: rgba(255, 255, 255, 0.62);
     --text-main: #151515;
     --text-soft: #3c3c3c;
+    --button-background: radial-gradient(circle at 16% 22%, rgba(173, 216, 230, 0.96), transparent 46%),
+  radial-gradient(circle at 82% 78%, rgba(100, 149, 237, 0.88), transparent 38%),
+  linear-gradient(145deg, #b0e0ff 0%, #6cb4ee 40%, #4682b4 100%);
 }
