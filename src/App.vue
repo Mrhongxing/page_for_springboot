@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { compute } from 'three/tsl'
+import "@/style/index.css"
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -21,6 +21,8 @@ const routerclass = computed(() => {
 
   </div>
   <router-view :class="routerclass" />
+  <div class="over"></div>
+  <div class="bottom-div"></div>
   <!-- 隐藏在视图外的SVG滤镜 -->
   <svg data-v-7a7a37b1 width="0" height="0" style="position: absolute; left: -9999px; top: -9999px;">
     <defs>
@@ -40,6 +42,12 @@ div[class*="router-"] {
   width: 100%;
 }
 
+.bottom-div {
+  height: calc(100vh + 56px);
+  display: none;
+  
+  /* 导航栏高度 */
+}
 /* 登录页面 */
 .router-Login {
   background-color: #f0f8ff;
@@ -132,6 +140,18 @@ div[class*="router-"] {
     border-radius: 28px;
     /* 两端圆角 */
     box-shadow: 0 10px 30px rgba(20, 30, 40, 0.12);
+  }
+}
+@media (max-height: 1000px) {
+  .bottom-div {
+    display: block;
+  }
+  .over{
+    position: absolute;
+    top: 100vh;
+    width: 100vw;
+    height: 56px;
+    background: var(--page-background);
   }
 }
 </style>

@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { update } from 'three/examples/jsm/libs/tween.module.js'
 
 export const useUserInfoStore = defineStore('userInfo', {
   state: () => ({
@@ -17,6 +18,11 @@ export const useUserInfoStore = defineStore('userInfo', {
     })
   },
   actions: {
+    updateUserInfo(name: string, phone: string, email: string) {
+      this.name = name
+      this.phone = phone
+      this.email = email
+    },
     setUserInfo(userInfo: {
       id: number,
       name: string,

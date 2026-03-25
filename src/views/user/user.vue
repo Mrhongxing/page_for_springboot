@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserInfoStore } from '@/stores/UserInfo'
 import apiClient from '@/apiClient/apiClient'
-import { idText } from 'typescript'
+import '@/style/index.css'
 
 let userName = useUserInfoStore().userInfo.name
 let userPhone = useUserInfoStore().userInfo.phone
@@ -12,12 +12,18 @@ const editName = ref(false)
 const editDesc = ref(false)
 const editPhone = ref(false)
 const editEmail = ref(false)
+const router = useRouter()
 
 if (!localStorage.getItem('token')) {
     const router = useRouter()
     router.push('/login')
 }
-
+function exit_login() {
+    localStorage.removeItem('token')
+    useUserInfoStore().clearUserInfo()
+    
+    router.push('/login')
+}
 async function saveName() {
     apiClient.post('apiForChargingStation/user/updateUserInfo', {
         id: useUserInfoStore().userInfo.id,
@@ -27,15 +33,15 @@ async function saveName() {
     }).then((response) => {
         if (response.data) {
             alert("修改成功");
-            useUserInfoStore().setUserInfo(response.data.data);
+            useUserInfoStore().updateUserInfo(userName, userPhone, userEmail);
         } else {
             alert("修改失败");
         }
-    }).catch(() => {
+    }).catch((error) => {
         alert("服务器连接异常，请稍后重试");
-    })
-    editName.value = false
-    
+    }).finally(() => {
+        editName.value = false
+    })    
 }
 async function savePhone() {
     apiClient.post('apiForChargingStation/user/updateUserInfo', {
@@ -46,11 +52,11 @@ async function savePhone() {
     }).then((response) => {
         if (response.data) {
             alert("修改成功");
-            useUserInfoStore().setUserInfo(response.data.data);
+            useUserInfoStore().updateUserInfo(userName, userPhone, userEmail);
         } else {
             alert("修改失败");
         }
-    }).catch(() => {
+    }).catch((error) => {
         alert("服务器连接异常，请稍后重试");
     })
     editPhone.value = false
@@ -64,11 +70,11 @@ async function saveEmail() {
     }).then((response) => {
         if (response.data) {
             alert("修改成功");
-            useUserInfoStore().setUserInfo(response.data.data);
+            useUserInfoStore().updateUserInfo(userName, userPhone, userEmail);
         } else {
             alert("修改失败");
         }
-    }).catch(() => {
+    }).catch((error) => {
         alert("服务器连接异常，请稍后重试");
     })
     editEmail.value = false
@@ -128,6 +134,9 @@ async function saveEmail() {
                 </template>
             </div> -->
         </div>
+        <div class="select">
+            <div class="exit-btn" @click="exit_login">退出</div>
+        </div>
     </div>
 </template>
 
@@ -137,25 +146,16 @@ img.avatar {
 }
 
 .user-container {
-    --glass-bg: rgba(255, 255, 255, 0.58);
-    --glass-bg-strong: rgba(255, 255, 255, 0.72);
-    --glass-border: rgba(255, 255, 255, 0.82);
-    --glass-border-soft: rgba(255, 255, 255, 0.62);
-    --text-main: #151515;
-    --text-soft: #3c3c3c;
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     color: var(--text-main);
     background:
-        radial-gradient(circle at 16% 22%, rgba(255, 255, 255, 0.96), transparent 46%),
-        radial-gradient(circle at 82% 78%, rgba(255, 255, 255, 0.88), transparent 38%),
-        linear-gradient(145deg, #ececec 0%, #dddddd 40%, #d3d3d3 100%);
+        var(--page-background);
     min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content:center;
     gap: 24px;
-    
 }
 
 .profile-header {
@@ -167,13 +167,12 @@ img.avatar {
     margin: 20px;
     box-sizing: border-box;
     width: calc(100% - 40px);
-    background: linear-gradient(145deg, var(--glass-bg-strong), var(--glass-bg));
+    background: var(--title-background);
     box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.78),
-        0 16px 34px rgba(0, 0, 0, 0.28),
-        0 5px 10px rgba(0, 0, 0, 0.14);
+        var(--box-shadow);
     backdrop-filter: blur(16px) saturate(120%);
     -webkit-backdrop-filter: blur(16px) saturate(120%);
+    max-width: 800px;
 }
 
 .header-info {
@@ -182,17 +181,36 @@ img.avatar {
     justify-content: space-between;
     align-items: center;
     flex-direction: column;
-
     .header-row {
         font-size: larger;
         width: 100%;
         display: flex;
         align-items: center;
+        justify-content: left;
         margin-bottom: 10px;
-
         .label {
             font-weight: bold;
             margin-right: 10px;
+        }
+        input{
+            max-width: calc(100vw - 300px);
+            flex: 1;
+            padding: 8px 12px;
+            border: none;
+            border-bottom: 2px solid var(--text-main);
+            background: transparent;
+            color: var(--text-main);
+            font-size: inherit;
+            transition: all 0.3s ease;
+            outline: none;
+            &:focus {
+                border-bottom-color: #00d4ff;
+                box-shadow: var(--box-shadow);
+                transform: translateY(-2px);
+            }
+            &:hover {
+                border-bottom-color: var(--button-background);
+            }
         }
     }
 }
@@ -201,17 +219,15 @@ img.avatar {
     margin: 20px;
     padding: 20px;
     color: var(--text-main);
-    background: linear-gradient(145deg, var(--glass-bg-strong), var(--glass-bg));
+    background: var(--first-background);
     box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.78),
-        0 16px 34px rgba(0, 0, 0, 0.28),
-        0 5px 10px rgba(0, 0, 0, 0.14);
+        var(--box-shadow);
     border-radius: 22px;
     box-sizing: border-box;
     width: calc(100% - 40px);
     backdrop-filter: blur(16px) saturate(120%);
     -webkit-backdrop-filter: blur(16px) saturate(120%);
-
+    max-width: 800px;
     .header-row {
         width: 100%;
         display: flex;
@@ -222,6 +238,27 @@ img.avatar {
             font-weight: bold;
             margin-right: 10px;
         }
+        input{
+            max-width: calc(100vw - 200px);
+            min-width: calc(200px);
+            flex: 1;
+            padding: 8px 12px;
+            border: none;
+            border-bottom: 2px solid var(--text-main);
+            background: transparent;
+            color: var(--text-main);
+            font-size: inherit;
+            transition: all 0.3s ease;
+            outline: none;
+            &:focus {
+                border-bottom-color: #00d4ff;
+                box-shadow: var(--box-shadow);
+                transform: translateY(-2px);
+            }
+            &:hover {
+                border-bottom-color: var(--button-background);
+            }
+        }
     }
 }
 
@@ -229,11 +266,12 @@ img.avatar {
 .save-btn {
     margin-left: 10px;
     background-color: #f4f4f4;
-    color: black;
+    color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    background: var(--button-background);
 }
 
 .edit-btn:hover,
@@ -246,5 +284,20 @@ img.avatar {
     border: 1px solid #ccc;
     border-radius: 4px;
     width: 200px;
+}
+.select:last-child {
+    
+    .exit-btn {
+        
+        color: red;
+        border: none;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: background-color 0.3s ease;
+        display: flex;
+    align-items: center;
+    justify-content: center;
+
+    }
 }
 </style>

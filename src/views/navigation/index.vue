@@ -3,6 +3,7 @@ import AMapLoader from '@amap/amap-jsapi-loader';
 import { onMounted, onUnmounted, ref } from 'vue';
 import { useCounterStore } from '@/stores/counter';
 import { useNavigationStore } from '@/stores/navigateStore';
+import '@/style/index.css';
 let map: any = null;
 const markerContent = `<div class="custom-content-marker">
 <img src="//a.amap.com/jsapi_demos/static/demo-center/icons/dir-via-marker.png">
@@ -13,6 +14,17 @@ let driving:any = null;
 let placeSearch = null;
 const searchInput = ref('');
 let searchResults: any = null;
+const translateY = ref(0)
+const containerRef = ref(null)
+const handleScroll = (e) => {
+  const scrollTop = e.target.scrollTop
+  
+  // 向上滑动时，元素向上移动
+  // 最多移动 200px
+  translateY.value = Math.min(scrollTop * 0.5, 200)
+  
+  console.log('滚动距离:', scrollTop, '移动距离:', translateY.value)
+}
 function search(data: any) {
         map.clearMap();
         if(driving){
@@ -55,6 +67,11 @@ function search(data: any) {
 onMounted(() => {
     let latitude = 39.90923; // 纬度
     let longitude = 116.397428; // 经度
+    const contentEl = document.querySelector('.navigation-container')
+  if (contentEl) {
+    contentEl.addEventListener('scroll', handleScroll)
+  }else {
+    console.warn('未找到导航容器元素，无法绑定滚动事件')}
     (window as any)._AMapSecurityConfig = {
         securityJsCode: "d012ab2fd0f0fe0113b39e580923ad17",
     };
@@ -206,8 +223,13 @@ onMounted(() => {
     document.querySelector(".close-btn").onclick = clearMarker; //绑定点击事件 */
 });
 onUnmounted(() => {
+    const contentEl = document.querySelector('.content')
+  if (contentEl) {
+    contentEl.removeEventListener('scroll', handleScroll)
+  }
     map?.destroy();
 });
+
 </script>
 <template>
     <div class="navigation-container">
@@ -220,9 +242,13 @@ onUnmounted(() => {
     </div>
 </template>
 <style scoped>
+.navigation-container {
+    overflow: scroll;
+}
 #container {
     width: 100%;
     height: 100vh;
+    
 }
 
 .custom-content-marker {
@@ -263,10 +289,8 @@ onUnmounted(() => {
     background: white;
     padding: 20px;
     border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-   
+    box-shadow: var(--box-shadow);
     overflow: scroll;
-    max-height: 100vh;
     box-sizing: border-box;
 }
 
@@ -278,23 +302,53 @@ onUnmounted(() => {
     background: white;
     padding: 10px 15px;
     border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--box-shadow);
+    align-items:end;
 }
 
-.search input {
-    width: 200px;
-    padding: 5px 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    margin-right: 10px;
-}
+.search input{
+            max-width: calc(100vw - 200px);
+            flex: 1;
+            padding: 8px 12px;
+            border: none;
+            border-bottom: 2px solid var(--text-main);
+            background: transparent;
+            color: var(--text-main);
+            font-size: inherit;
+            transition: all 0.3s ease;
+            outline: none;
+            &:focus {
+                border-bottom-color: #00d4ff;
+                box-shadow: var(--box-shadow);
+                transform: translateY(-2px);
+            }
+            &:hover {
+                border-bottom-color: var(--button-background);
+            }
+        }
 
 .search button {
     padding: 5px 15px;
-    background-color: #007bff;
+    box-sizing: border-box;
+    height: 100%;
+    background: var(--button-background);
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
+}
+@media(max-width: 768px){
+    #my-panel {
+        min-width: 100vw;
+        min-height: calc(20vh + 56px);
+        position: relative;
+        padding:  0 0 20vh 0;
+        overflow: visible;
+    }
+    #container {
+    width: 100%;
+    height: 80vh;
+    
+}
 }
 </style>

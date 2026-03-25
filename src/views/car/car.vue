@@ -72,9 +72,7 @@
     box-sizing: border-box;
     color: var(--text-main);
     background:
-        radial-gradient(circle at 16% 22%, rgba(255, 255, 255, 0.96), transparent 46%),
-        radial-gradient(circle at 82% 78%, rgba(255, 255, 255, 0.88), transparent 38%),
-        linear-gradient(145deg, #ececec 0%, #dddddd 40%, #d3d3d3 100%);
+        var(--page-background)
 }
 
 .car-image-container {

@@ -5,44 +5,43 @@
         </div>
         <div class="favorite-container">
             <div class="favorite-item" v-for="value in source" :key="value.id">
-                <div>{{ value.name }}</div>
                 <div>{{ value.address }}</div>
                 <button class="useful-button" @click="goToLocation(value)">现在去</button>
-                <button class="useful-button" @click="removeFavorite(value.id)">取消收藏</button>
+                <button class="delete-button" @click="removeFavorite(value.id)">X</button>
             </div>
         </div>
     </div>
 </template>
 <script setup>
 import apiClient from '@/apiClient/apiClient';
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, useAttrs } from 'vue';
 import '@/style/index.css';
+import { useUserInfoStore } from '@/stores/UserInfo';
+const userInfo = useUserInfoStore();
 const source = ref([
     {
         id: 1,
         name: '地点1',
         address: '地址1'
-    },
-    {
-        id: 2,
-        name: '地点2',
-        address: '地址2'
-    },
-    {
-        id: 3,
-        name: '地点3',
-        address: '地址3'
-    },{
-        id: 4,
-        name: '地点4',
-        address: '地址4'
-    },{
-        id: 5,
-        name: '地点5',
-        address: '地址5'
     }
 ]);
-
+async function fetchFavorites() {
+    console.log('正在获取收藏地点，用户ID:', userInfo.id);
+    try {
+        const response = await apiClient.get("/apiForChargingStation/favorites/getFavorites", {
+            params: {
+                userId: userInfo.id
+            }
+        });
+        source.value = response.data;
+        console.log('获取收藏地点成功:', response.data);
+    } catch (error) {
+        console.error('获取收藏地点失败:', error);
+    }
+}
+onMounted(() => {
+    fetchFavorites();
+});
 </script>
 <style>
 .favorites-page {
@@ -51,27 +50,25 @@ const source = ref([
     align-items: center;
     color: var(--text-main);
     background:
-        radial-gradient(circle at 16% 22%, rgba(255, 255, 255, 0.96), transparent 46%),
-        radial-gradient(circle at 82% 78%, rgba(255, 255, 255, 0.88), transparent 38%),
-        linear-gradient(145deg, #ececec 0%, #dddddd 40%, #d3d3d3 100%);
+        var(--page-background);
     gap: 20px;
-    justify-content: space-around;
+    justify-content: center;
     min-height: 100vh;
     .name-container {
         display: flex;
         min-width: 200px;
         width: 80%;
+        max-width: 800px;
         justify-content: center;
         font-size: clamp(1.4rem, 3.8vw, 2.2rem);
         align-items: center;
         min-height: 100px;
         box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.78),
-            0 16px 34px rgba(0, 0, 0, 0.28),
-            0 5px 10px rgba(0, 0, 0, 0.14);
+            var(--box-shadow);
         backdrop-filter: blur(16px) saturate(120%);
         -webkit-backdrop-filter: blur(16px) saturate(120%);
         border-radius: 22px;
+        background: var(--title-background);
     }
     .favorite-container {
         font-weight: 600;
@@ -80,14 +77,11 @@ const source = ref([
         gap: 20px;
         min-width: 200px;
         width: 80%;
+        max-width: 800px;
         box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.78),
-            0 16px 34px rgba(0, 0, 0, 0.28),
-            0 5px 10px rgba(0, 0, 0, 0.14);
+            var(--box-shadow);
         backdrop-filter: blur(16px) saturate(120%);
-        background:radial-gradient(circle at 16% 22%, rgba(255, 255, 255, 0.96), transparent 46%),
-        radial-gradient(circle at 82% 78%, rgba(255, 255, 255, 0.88), transparent 38%),
-        linear-gradient(145deg, #ececec 0%, #dddddd 40%, #d3d3d3 100%);
+        background: var(--first-background);
         border-radius: 22px;
         align-items: center;
         box-sizing: border-box;
@@ -99,17 +93,25 @@ const source = ref([
             align-items: center;
             justify-content: space-around;
             box-shadow:
-                inset 0 1px 0 rgba(255, 255, 255, 0.78),
-                0 16px 34px rgba(0, 0, 0, 0.28),
-                0 5px 10px rgba(0, 0, 0, 0.14);
+                var(--box-shadow);
             backdrop-filter: blur(16px) saturate(120%);
             -webkit-backdrop-filter: blur(16px) saturate(120%);
             border-radius: 22px;
             width: 90%;
+            background: var(--first-background);
             .useful-button {
-                padding: 10px 20px;
+                padding: 10px ;
                 background: var(--button-background);
                 color: white;
+                border: none;
+                border-radius: 8px;
+                cursor: pointer;
+                font-size: 1rem;
+                transition: background-color 0.3s ease;
+            }
+            .delete-button {
+                padding: 10px ;
+                background-color: transparent;
                 border: none;
                 border-radius: 8px;
                 cursor: pointer;
