@@ -266,7 +266,7 @@ img.avatar {
 .save-btn {
     margin-left: 10px;
     background-color: #f4f4f4;
-    color: white;
+    color: var(--text-soft);
     border: none;
     border-radius: 4px;
     cursor: pointer;

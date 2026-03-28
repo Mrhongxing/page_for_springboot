@@ -21,8 +21,8 @@ const routerclass = computed(() => {
 
   </div>
   <router-view :class="routerclass" />
-  <div class="over"></div>
-  <div class="bottom-div"></div>
+  <div v-if="!(route.name?.toString()=='navigation')" class="over">1</div>
+  <div class="bottom-div">1</div>
   <!-- 隐藏在视图外的SVG滤镜 -->
   <svg data-v-7a7a37b1 width="0" height="0" style="position: absolute; left: -9999px; top: -9999px;">
     <defs>
@@ -39,7 +39,8 @@ div[class*="router-"] {
   position: absolute;
   left: 0;
   top: 0;
-  width: 100%;
+  width: 100vw;
+ 
 }
 
 .bottom-div {
@@ -71,8 +72,8 @@ div[class*="router-"] {
   justify-content: space-around;
   padding: 8px 12px;
   backdrop-filter: blur(4px) url(#liquid_glass_filter);
-  background: rgba(255, 255, 255, 0.1);
-  box-shadow: 0 -1px 6px rgba(0, 0, 0, 0.06);
+  background: var(--title-background);
+  box-shadow: var(--box-shadow);
   z-index: 1000;
   border-radius: 0;
   /* 手机端两侧不圆角，充满底部 */
@@ -108,11 +109,6 @@ div[class*="router-"] {
     background-color: #1e1e1e;
   }
 
-  .nav-bar {
-    background: rgba(30, 30, 30, 0.3);
-    box-shadow: 0 -1px 6px rgba(255, 255, 255, 0.06);
-  }
-
   .nav-bar a {
     color: #ddd;
   }
@@ -139,18 +135,21 @@ div[class*="router-"] {
     padding: 10px 18px;
     border-radius: 28px;
     /* 两端圆角 */
-    box-shadow: 0 10px 30px rgba(20, 30, 40, 0.12);
+    
   }
 }
 @media (max-height: 1000px) {
   .bottom-div {
-    display: block;
+    display:none;
+    position: unset;
   }
   .over{
     position: absolute;
     top: 100vh;
-    width: 100vw;
+    width: 100%;
     height: 56px;
+    left: 0;
+    top: 100vh;
     background: var(--page-background);
   }
 }

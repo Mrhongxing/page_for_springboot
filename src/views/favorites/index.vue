@@ -17,6 +17,8 @@ import apiClient from '@/apiClient/apiClient';
 import { onMounted, ref, useAttrs } from 'vue';
 import '@/style/index.css';
 import { useUserInfoStore } from '@/stores/UserInfo';
+import router from '@/router';
+import { useNavigationStore } from '@/stores/navigateStore';
 const userInfo = useUserInfoStore();
 const source = ref([
     {
@@ -39,6 +41,14 @@ async function fetchFavorites() {
         console.error('获取收藏地点失败:', error);
     }
 }
+function goToLocation(value) {
+    useNavigationStore().setTrigger('favorites', 'navigate', {
+        destination: value.address,
+        latitude: value.latitude,
+        longitude: value.longitude
+    });
+    router.push('/navigation');
+}
 onMounted(() => {
     fetchFavorites();
 });
@@ -51,14 +61,14 @@ onMounted(() => {
     color: var(--text-main);
     background:
         var(--page-background);
-    gap: 20px;
+    gap: 4vh;
     justify-content: center;
     min-height: 100vh;
     .name-container {
         display: flex;
-        min-width: 200px;
-        width: 80%;
-        max-width: 800px;
+        min-width: 175px;
+        width: 70%;
+        max-width: 700px;
         justify-content: center;
         font-size: clamp(1.4rem, 3.8vw, 2.2rem);
         align-items: center;
@@ -102,7 +112,7 @@ onMounted(() => {
             .useful-button {
                 padding: 10px ;
                 background: var(--button-background);
-                color: white;
+                color: var(--text-soft);
                 border: none;
                 border-radius: 8px;
                 cursor: pointer;
@@ -117,6 +127,7 @@ onMounted(() => {
                 cursor: pointer;
                 font-size: 1rem;
                 transition: background-color 0.3s ease;
+                color: var(--text-main);
             }
         }
     }

@@ -7,71 +7,136 @@ import '@/style/index.css';
 let map: any = null;
 const markerContent = `<div class="custom-content-marker">
 <img src="//a.amap.com/jsapi_demos/static/demo-center/icons/dir-via-marker.png">
-<div class="close-btn" onclick="clearMarker()">X</div>
+<div class="close-btn" onclick="clearMarker()">位置</div>
 </div>`
 let amap: any = null;
-let driving:any = null;
+let driving: any = null;
 let placeSearch = null;
+const resultList = ref(null);
 const searchInput = ref('');
-let searchResults: any = null;
+const searchResults = ref([
+
+]);
+const pageIndex = ref(0)
 const translateY = ref(0)
-const containerRef = ref(null)
+const resultArray = ref([1]);
+const showArray = ref([1]);
 const handleScroll = (e) => {
-  const scrollTop = e.target.scrollTop
-  
-  // 向上滑动时，元素向上移动
-  // 最多移动 200px
-  translateY.value = Math.min(scrollTop * 0.5, 200)
-  
-  console.log('滚动距离:', scrollTop, '移动距离:', translateY.value)
+    const scrollTop = e.target.scrollTop
+    // 向上滑动时，元素向上移动
+    // 最多移动 200px
+    translateY.value = Math.min(scrollTop * 0.5, 200)
+    console.log('滚动距离:', scrollTop, '移动距离:', translateY.value)
 }
 function search(data: any) {
-        map.clearMap();
-        if(driving){
-            driving.clear();
-        }
-        if (map) {
-            map.setCenter(useCounterStore().localPlace);
-            map.setZoom(15); // 放大到合适级别
-        }
-        const positionMark = new amap.LngLat(useCounterStore().localPlace[0], useCounterStore().localPlace[1]); //Marker 经纬度
-        const marker = new amap.Marker({
-            position: positionMark, //Marker 经纬度
-            content: markerContent, //将 html 传给 content
-            offset: new amap.Pixel(-13, -30), //以 icon 的 [center bottom] 为原点
+    map.clearMap();
+    if (driving) {
+        driving.clear();
+    }
+    if (map) {
+        map.setCenter(useCounterStore().localPlace);
+        map.setZoom(15); // 放大到合适级别
+    }
+    if (data) {
+        pageIndex.value = data - 1
+    } else {
+        data = 1;
+        pageIndex.value = data - 1
+    }
+    const positionMark = new amap.LngLat(useCounterStore().localPlace[0], useCounterStore().localPlace[1]); //Marker 经纬度
+    const marker = new amap.Marker({
+        position: positionMark, //Marker 经纬度
+        content: markerContent, //将 html 传给 content
+        offset: new amap.Pixel(-13, -30), //以 icon 的 [center bottom] 为原点
+    });
+    map.add(marker);
+    const traffic = new amap.TileLayer.Traffic({
+        autoRefresh: true, //是否自动刷新，默认为false
+        interval: 180, //刷新间隔，默认180s
+    });
+    amap.plugin(["AMap.PlaceSearch"], function () {
+        placeSearch = new amap.PlaceSearch({
+            pageSize: 5, //单页显示结果条数
+            pageIndex: data, //页码
+            city: useCounterStore().provinceName, //兴趣点城市
+            citylimit: true, //是否强制限制在设置的城市内搜索
+            //location: useCounterStore().localPlace, //设置周边搜索中心点
+            map: map, //展现结果的地图实例
+            panel: "my-panel", //参数值为你页面定义容器的 id 值<div id="my-panel"></div>，结果列表将在此容器中进行展示。
+            autoFitView: true, //是否自动调整地图视野使绘制的 Marker 点都处于视口的可见范围
         });
-        map.add(marker);
-        const traffic = new amap.TileLayer.Traffic({
-            autoRefresh: true, //是否自动刷新，默认为false
-            interval: 180, //刷新间隔，默认180s
-        });
-        amap.plugin(["AMap.PlaceSearch"], function () {
-            placeSearch = new amap.PlaceSearch({
-                pageSize: 5, //单页显示结果条数
-                pageIndex: 1, //页码
-                city: useCounterStore().provinceName, //兴趣点城市
-                citylimit: true, //是否强制限制在设置的城市内搜索
-                //location: useCounterStore().localPlace, //设置周边搜索中心点
-                map: map, //展现结果的地图实例
-                panel: "my-panel", //参数值为你页面定义容器的 id 值<div id="my-panel"></div>，结果列表将在此容器中进行展示。
-                autoFitView: true, //是否自动调整地图视野使绘制的 Marker 点都处于视口的可见范围
-            });
-            //AMap.event.addListener(placeSearch, "complete", keywordSearch_CallBack); //返回结果
-            /* placeSearch.search('西域'); //关键字查询 */
-            //placeSearch.search(searchInput.value, function (status, result) { console.log(status, result) });  //使用插件搜索关键字并查看结果
-            console.log('搜索内容:', searchInput.value);
-            placeSearch.searchNearBy(searchInput.value, useCounterStore().localPlace, 5000, function (status: any, result: any) { map.setCenter([result.poiList.pois[0].location.lng, result.poiList.pois[0].location.lat]); });  //使用插件搜索关键字并查看结果
-        });
-   
+        //AMap.event.addListener(placeSearch, "complete", keywordSearch_CallBack); //返回结果
+        /* placeSearch.search('西域'); //关键字查询 */
+        //placeSearch.search(searchInput.value, function (status, result) { console.log(status, result) });  //使用插件搜索关键字并查看结果
+        console.log('搜索内容:', searchInput.value);
+        placeSearch.searchNearBy(searchInput.value, useCounterStore().localPlace, 5000, function (status: any, result: any) {
+            console.log('附近搜索回调状态:', status); console.log('附近搜索结果:', result); map.setCenter([result.poiList.pois[0].location.lng, result.poiList.pois[0].location.lat]); searchResults.value = result.poiList.pois;
+            if (result.poiList.count % 5 === 0) {
+                for (let i = 0; i < result.poiList.count / 5; i++) {
+                    resultArray.value[i] = i + 1;
+                }
+            } else {
+                
+                    for (let i = 0; i < Math.floor(result.poiList.count / 5) + 1; i++) {
+                        resultArray.value[i] = i + 1;
+                    }
+                
+            }
+            console.log('分页数组:', resultArray.value);
+            if (resultArray.value.length < 5) {
+                showArray.value = resultArray.value;
+            } else {
+                if (pageIndex.value < 2) {
+                    for (let o = 0; o < 4; o++) {
+                        showArray.value[o] = resultArray.value[o+pageIndex.value];
+                        console.log(showArray.value);
+                    }
+                }else{
+                    for (let o = 0; o < 4; o++) {
+                        if (o+pageIndex.value-1 < resultArray.value.length) {
+                        showArray.value[o] = resultArray.value[o+pageIndex.value-1];
+                        console.log(showArray.value);
+                        }
+                    }
+                }
+            }
+
+        });  //使用插件搜索关键字并查看结果
+    });
+    if (resultList.value) {
+        resultList.value.style.display = 'flex';
+    }
+    console.log('搜索结果:', resultArray.value);
+}
+
+function fucos(lat: number, lng: number) {
+    map.setCenter([lng, lat]);
+}
+function toStart() {
+    pageIndex.value = 0;
+    search(pageIndex.value + 1);
+}
+function toFont() {
+    if (pageIndex.value > 0) {
+        pageIndex.value -= 1;
+        search(pageIndex.value + 1);
+    }
+}
+function toNext() {
+    if (pageIndex.value < resultArray.value.length - 1) {
+        pageIndex.value += 1;
+        search(pageIndex.value + 1);
+    }
 }
 onMounted(() => {
     let latitude = 39.90923; // 纬度
     let longitude = 116.397428; // 经度
     const contentEl = document.querySelector('.navigation-container')
-  if (contentEl) {
-    contentEl.addEventListener('scroll', handleScroll)
-  }else {
-    console.warn('未找到导航容器元素，无法绑定滚动事件')}
+    if (contentEl) {
+        contentEl.addEventListener('scroll', handleScroll)
+    } else {
+        console.warn('未找到导航容器元素，无法绑定滚动事件')
+    }
     (window as any)._AMapSecurityConfig = {
         securityJsCode: "d012ab2fd0f0fe0113b39e580923ad17",
     };
@@ -168,6 +233,29 @@ onMounted(() => {
                                             });
                                         });  //使用插件搜索关键字并查看结果
                                     })
+                                } else if (useNavigationStore().from === 'favorites') {
+
+                                    const startLngLat = [longitude, latitude] //起始点坐标
+                                    const endLngLat = [useNavigationStore().data.longitude, useNavigationStore().data.latitude] //终点坐标
+                                    //引入和创建驾车规划插件
+                                    AMap.plugin(["AMap.Driving"], function () {
+                                        driving = new AMap.Driving({
+                                            map: map,
+                                            panel: "my-panel", //参数值为你页面定义容器的 id 值<div id="my-panel"></div>
+                                        });
+                                        //获取起终点规划线路
+                                        driving.search(startLngLat, endLngLat, function (status: any, result: any) {
+                                            if (status === "complete") {
+                                                //status：complete 表示查询成功，no_data 为查询无结果，error 代表查询错误
+                                                //查询成功时，result 即为对应的驾车导航信息
+                                                console.log(result);
+                                            } else {
+                                                console.log("获取驾车数据失败：" + result);
+                                            }
+                                        });
+                                    });
+                                    useNavigationStore().clearTrigger();
+
                                 }
                             }
                         });
@@ -221,12 +309,13 @@ onMounted(() => {
         map.remove(marker); //清除 marker
     }
     document.querySelector(".close-btn").onclick = clearMarker; //绑定点击事件 */
+
 });
 onUnmounted(() => {
     const contentEl = document.querySelector('.content')
-  if (contentEl) {
-    contentEl.removeEventListener('scroll', handleScroll)
-  }
+    if (contentEl) {
+        contentEl.removeEventListener('scroll', handleScroll)
+    }
     map?.destroy();
 });
 
@@ -239,16 +328,37 @@ onUnmounted(() => {
             <input type="text" v-model="searchInput" placeholder="请输入搜索内容" />
             <button @click="search(false)">搜索</button>
         </div>
+        <div ref="resultList" class="search_result">
+            <div class="list">
+                <div @click="fucos(item.location.lat, item.location.lng)" class="list_first"
+                    v-for="(item, index) in searchResults" :key="index">
+                    <div class="list_img"><img :src="item.photos[0].url" alt="图片" /></div>
+                    <div class="list_second"><div>{{ item.name }}</div>
+                    <div>{{ item.address }}</div></div>
+                    <div @click="favorite(item)" style="display: flex; align-items: center; height: 100%;margin-left: auto; flex-shrink: 0;">收藏</div>
+                </div>
+            </div>
+            <div class="pagination">
+                <button @click="toStart">首页</button>
+                <button @click="toFont">上一页</button>
+                <button @click="search(item)" :disabled="item == pageIndex+1" v-for="(item, index) in showArray"
+                    :key="index">{{ item }}</button>
+                <button @click="toNext">下一页</button>
+            </div>
+
+        </div>
     </div>
 </template>
 <style scoped>
 .navigation-container {
-    overflow: scroll;
+    overflow: hidden;
+    width: 100vw;
 }
+
 #container {
-    width: 100%;
+    width: 100vw;
     height: 100vh;
-    
+
 }
 
 .custom-content-marker {
@@ -282,6 +392,7 @@ onUnmounted(() => {
 }
 
 #my-panel {
+    display: none;
     position: fixed;
     top: 0px;
     right: 0px;
@@ -299,56 +410,164 @@ onUnmounted(() => {
     top: 0;
     left: 0;
     z-index: 10;
-    background: white;
+    background: var(--title-background);
     padding: 10px 15px;
     border-radius: 8px;
     box-shadow: var(--box-shadow);
-    align-items:end;
+    display: flex;
+    align-items: end;
+    width: fit-content;
+    max-width: 600px;
+    justify-content: space-between;
+
 }
 
-.search input{
-            max-width: calc(100vw - 200px);
-            flex: 1;
-            padding: 8px 12px;
-            border: none;
-            border-bottom: 2px solid var(--text-main);
-            background: transparent;
-            color: var(--text-main);
-            font-size: inherit;
-            transition: all 0.3s ease;
-            outline: none;
-            &:focus {
-                border-bottom-color: #00d4ff;
-                box-shadow: var(--box-shadow);
-                transform: translateY(-2px);
-            }
-            &:hover {
-                border-bottom-color: var(--button-background);
-            }
-        }
+.search input {
+    flex: 1;
+    padding: 8px 12px;
+    border: none;
+    border-bottom: 2px solid var(--text-main);
+    background: transparent;
+    color: var(--text-main);
+    font-size: inherit;
+    transition: all 0.3s ease;
+    outline: none;
+    width: 40vw;
+    &:focus {
+        border-bottom-color: var(--text-soft);
+        box-shadow: var(--box-shadow);
+        transform: translateY(-2px);
+    }
+}
 
 .search button {
-    padding: 5px 15px;
+    padding: 10px 15px;
     box-sizing: border-box;
     height: 100%;
     background: var(--button-background);
-    color: white;
+    color: var(--text-soft);
     border: none;
     border-radius: 4px;
     cursor: pointer;
 }
-@media(max-width: 768px){
+
+.search_result {
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+    top: 60px;
+    left: 0;
+    z-index: 10;
+    background: var(--first-background);
+    padding: 10px 15px;
+    border-radius: 10px;
+    box-shadow: var(--box-shadow);
+    overflow: auto;
+    display: none;
+    height: fit-content;
+    width: 40vw;
+    max-width: 600px;
+}
+
+.list {
+    display: flex;
+    flex-direction: column;
+    height: fit-content;
+    gap: 10px;
+    width: 100%;
+    .list_first {
+        display: flex;
+        flex-direction:row;
+        padding: 10px;
+        box-shadow:
+            var(--box-shadow);
+        backdrop-filter: blur(16px) saturate(120%);
+        -webkit-backdrop-filter: blur(16px) saturate(120%);
+        border-radius: 10px;
+        background: var(--first-background);
+        cursor: pointer;
+        color: var(--text-main);
+        transition: all 1s ease;
+        height: 100px;
+        &:hover {
+            background: var(--button-background);
+            color: var(--text-soft);
+        }
+        align-items: center;
+        div {
+            font-weight: 600;
+        }
+        .list_second{
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+        }
+        .list_img{
+            img{
+                width: 80px;
+                height: 80px;
+                border-radius: 8px;
+            }
+        }
+    }
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-top: 30px;
+    box-sizing: border-box;
+    padding: 10px;
+    border-radius: 10px;
+    max-width: 100%;
+    button {
+        padding: 10px 10px;
+        background: var(--first-background);
+        box-shadow: var(--box-shadow);
+        color: var(--text-main);
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+
+        &:disabled {
+            background: var(--button-background);
+            color: var(--text-soft);
+            cursor: not-allowed;
+        }
+    }
+}
+
+@media(max-width: 768px) {
+    .navigation-container {
+        overflow-y: scroll;
+    }
+    .search {
+        max-width: 100vw;
+        width: 100%;
+        input{
+            width: 100%;
+        }
+        box-sizing: border-box;
+    }
     #my-panel {
         min-width: 100vw;
         min-height: calc(20vh + 56px);
         position: relative;
-        padding:  0 0 20vh 0;
+        padding: 0 0 20vh 0;
         overflow: visible;
     }
+    .search_result {
+        position: unset;
+        box-sizing: border-box;
+        width: 100%;
+        top: 80vh;
+        padding-bottom: 100px;
+    }
     #container {
-    width: 100%;
-    height: 80vh;
-    
-}
+        width: 100vw;
+        height: 80vh;
+    }
 }
 </style>
