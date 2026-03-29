@@ -94,7 +94,7 @@ async function handleRegister() {
                     <div class="loadbutton" @click="showRegisterForm">没有账号？注册一个</div>
                 </form>
             </div>
-            <div ref="registerform" class="registerform">
+            <div ref="registerform" class="registerform load">
                 <h1>注册</h1>
                 <form @submit.prevent="handleRegister">
                     <div>
@@ -119,7 +119,6 @@ async function handleRegister() {
     .login {
         background: var(--page-background);
     }
-
     .loginarea {
         position: fixed;
         top: 0;
@@ -132,10 +131,9 @@ async function handleRegister() {
         box-shadow: var(--box-shadow);
         border-radius: 20px;
     }
-
     .loadbutton {
         margin-top: 15px;
-        color: #007bff;
+        color: var(--text-main);
         cursor: pointer;
         text-align: center;
     }
@@ -153,6 +151,7 @@ async function handleRegister() {
         left: 25vw;
         z-index: 11;
         background: var(--title-background);
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     }
 
     .registerform {
@@ -171,13 +170,12 @@ async function handleRegister() {
             height: 100%;
         }
     }
-
     .load {
         animation: spin 2s ease;
         z-index: 9;
         border-radius: 20px;
+        display: none;
     }
-
     @keyframes spin {
         0% {
             translate: translateX(0);
@@ -191,13 +189,11 @@ async function handleRegister() {
             transform: translateX(0);
         }
     }
-
     button:hover {
-        background-color: #1565C0;
+        background: var(--first-background-gradient);
+        color: var(--text-main);
     }
 }
-
-
 form div {
     margin-bottom: 15px;
 }
@@ -217,20 +213,22 @@ input {
 button {
     width: 100%;
     padding: 10px;
-    background-color: #1E88E5;
-    color: white;
+    background: var(--button-background);
+    color: var(--text-soft);
     border: none;
     border-radius: 5px;
     cursor: pointer;
 }
 
 @media (max-width: 999px) {
+    .login {
+        background: var(--page-background);
+    }
     .loginarea {
         width: 100vw;
         height: 100vh;
         position: fixed;
     }
-
     .loginform,
     .registerform {
         color: var(--text-main);
@@ -243,7 +241,7 @@ button {
         padding: 20px;
         box-sizing: border-box;
         z-index: 11;
-        background: var(--title-background);
+        background: var(--first-background);
         box-shadow: var(--box-shadow);
     }
 
@@ -256,16 +254,14 @@ button {
     }
 
     .loadbutton {
-
-
         cursor: pointer;
-
     }
 
     .load {
         animation: spin 2s ease;
         z-index: 9;
         border-radius: 20px;
+        display: none;
     }
 
     @keyframes spin {

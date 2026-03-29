@@ -14,6 +14,7 @@ div {
     0 16px 34px rgba(0, 0, 0, 0.28),
     0 5px 10px rgba(0, 0, 0, 0.14);
   --first-background: linear-gradient(140deg, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.45));
+  --first-background-gradient: linear-gradient(140deg, rgba(255, 255, 255), rgba(255, 255, 255));
 }
 
 @media (prefers-color-scheme: dark) {
@@ -33,6 +34,7 @@ div {
     0 16px 34px rgba(160, 160, 180, 0.25),
     0 5px 10px rgba(140, 140, 160, 0.15);
   --first-background: linear-gradient(140deg, rgba(30, 30, 38, 0.78), rgba(20, 20, 28, 0.55));
+  --first-background-gradient: linear-gradient(140deg, rgba(30, 30, 38), rgba(20, 20, 28));
 }
 }
 body {

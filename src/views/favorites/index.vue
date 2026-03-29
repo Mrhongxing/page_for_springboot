@@ -6,8 +6,11 @@
         <div class="favorite-container">
             <div class="favorite-item" v-for="value in source" :key="value.id">
                 <div>{{ value.address }}</div>
-                <button class="useful-button" @click="goToLocation(value)">现在去</button>
-                <button class="delete-button" @click="removeFavorite(value.id)">X</button>
+                <div class="useful-buttons">
+                    <button class="useful-button" @click="goToLocation(value)">现在去</button>
+                    <button class="delete-button" @click="removeFavorite(value.id)">×</button>
+                </div>
+
             </div>
         </div>
     </div>
@@ -17,8 +20,9 @@ import apiClient from '@/apiClient/apiClient';
 import { onMounted, ref, useAttrs } from 'vue';
 import '@/style/index.css';
 import { useUserInfoStore } from '@/stores/UserInfo';
-import router from '@/router';
+import { useRouter } from 'vue-router';
 import { useNavigationStore } from '@/stores/navigateStore';
+const router = useRouter();
 const userInfo = useUserInfoStore();
 const source = ref([
     {
@@ -28,7 +32,6 @@ const source = ref([
     }
 ]);
 async function fetchFavorites() {
-    console.log('正在获取收藏地点，用户ID:', userInfo.id);
     try {
         const response = await apiClient.get("/apiForChargingStation/favorites/getFavorites", {
             params: {
@@ -36,9 +39,26 @@ async function fetchFavorites() {
             }
         });
         source.value = response.data;
-        console.log('获取收藏地点成功:', response.data);
+        if (source.value.length === 0) {
+            document.querySelector('.favorite-container').innerHTML = '<div style="font-size: 1.5rem; color: var(--text-main);">暂无收藏地点</div>';
+        } else {
+            console.log('获取收藏地点成功:', source.value);
+        }
     } catch (error) {
         console.error('获取收藏地点失败:', error);
+    }
+}
+async function removeFavorite(id) {
+    try {
+        await apiClient.delete("/apiForChargingStation/favorites/deleteFavorites", {
+            params: {
+                id: id
+            }
+        });
+        console.log('删除收藏地点成功');
+        fetchFavorites(); // 刷新收藏地点列表
+    } catch (error) {
+        console.error('删除收藏地点失败:', error);
     }
 }
 function goToLocation(value) {
@@ -54,6 +74,17 @@ onMounted(() => {
 });
 </script>
 <style>
+.useful-buttons{
+    display: flex;
+    align-items: center;
+    height: 100%;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+div {
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
 .favorites-page {
     display: flex;
     flex-direction: column;
@@ -64,6 +95,7 @@ onMounted(() => {
     gap: 4vh;
     justify-content: center;
     min-height: 100vh;
+
     .name-container {
         display: flex;
         min-width: 175px;
@@ -80,6 +112,7 @@ onMounted(() => {
         border-radius: 22px;
         background: var(--title-background);
     }
+
     .favorite-container {
         font-weight: 600;
         display: flex;
@@ -96,9 +129,10 @@ onMounted(() => {
         align-items: center;
         box-sizing: border-box;
         padding: 20px;
+
         .favorite-item {
             display: flex;
-            flex-direction:row;
+            flex-direction: row;
             padding: 20px;
             align-items: center;
             justify-content: space-around;
@@ -109,8 +143,9 @@ onMounted(() => {
             border-radius: 22px;
             width: 90%;
             background: var(--first-background);
+
             .useful-button {
-                padding: 10px ;
+                padding: 10px;
                 background: var(--button-background);
                 color: var(--text-soft);
                 border: none;
@@ -119,8 +154,9 @@ onMounted(() => {
                 font-size: 1rem;
                 transition: background-color 0.3s ease;
             }
+
             .delete-button {
-                padding: 10px ;
+                padding: 10px;
                 background-color: transparent;
                 border: none;
                 border-radius: 8px;

@@ -4,6 +4,8 @@ import { onMounted, onUnmounted, ref } from 'vue';
 import { useCounterStore } from '@/stores/counter';
 import { useNavigationStore } from '@/stores/navigateStore';
 import '@/style/index.css';
+import apiClient from '@/apiClient/apiClient';
+import { useUserInfoStore } from '@/stores/UserInfo';
 let map: any = null;
 const markerContent = `<div class="custom-content-marker">
 <img src="//a.amap.com/jsapi_demos/static/demo-center/icons/dir-via-marker.png">
@@ -15,19 +17,11 @@ let placeSearch = null;
 const resultList = ref(null);
 const searchInput = ref('');
 const searchResults = ref([
-
 ]);
 const pageIndex = ref(0)
-const translateY = ref(0)
 const resultArray = ref([1]);
 const showArray = ref([1]);
-const handleScroll = (e) => {
-    const scrollTop = e.target.scrollTop
-    // 向上滑动时，元素向上移动
-    // 最多移动 200px
-    translateY.value = Math.min(scrollTop * 0.5, 200)
-    console.log('滚动距离:', scrollTop, '移动距离:', translateY.value)
-}
+const isDriving = ref<Element>(null);
 function search(data: any) {
     map.clearMap();
     if (driving) {
@@ -42,6 +36,9 @@ function search(data: any) {
     } else {
         data = 1;
         pageIndex.value = data - 1
+    }
+    if(isDriving.value && isDriving.value.style.display === 'block'){
+        isDriving.value.style.display = 'none';
     }
     const positionMark = new amap.LngLat(useCounterStore().localPlace[0], useCounterStore().localPlace[1]); //Marker 经纬度
     const marker = new amap.Marker({
@@ -62,7 +59,7 @@ function search(data: any) {
             citylimit: true, //是否强制限制在设置的城市内搜索
             //location: useCounterStore().localPlace, //设置周边搜索中心点
             map: map, //展现结果的地图实例
-            panel: "my-panel", //参数值为你页面定义容器的 id 值<div id="my-panel"></div>，结果列表将在此容器中进行展示。
+            panel: false, //参数值为你页面定义容器的 id 值<div id="my-panel"></div>，结果列表将在此容器中进行展示。
             autoFitView: true, //是否自动调整地图视野使绘制的 Marker 点都处于视口的可见范围
         });
         //AMap.event.addListener(placeSearch, "complete", keywordSearch_CallBack); //返回结果
@@ -76,11 +73,11 @@ function search(data: any) {
                     resultArray.value[i] = i + 1;
                 }
             } else {
-                
-                    for (let i = 0; i < Math.floor(result.poiList.count / 5) + 1; i++) {
-                        resultArray.value[i] = i + 1;
-                    }
-                
+
+                for (let i = 0; i < Math.floor(result.poiList.count / 5) + 1; i++) {
+                    resultArray.value[i] = i + 1;
+                }
+
             }
             console.log('分页数组:', resultArray.value);
             if (resultArray.value.length < 5) {
@@ -88,14 +85,14 @@ function search(data: any) {
             } else {
                 if (pageIndex.value < 2) {
                     for (let o = 0; o < 4; o++) {
-                        showArray.value[o] = resultArray.value[o+pageIndex.value];
+                        showArray.value[o] = resultArray.value[o + pageIndex.value];
                         console.log(showArray.value);
                     }
-                }else{
+                } else {
                     for (let o = 0; o < 4; o++) {
-                        if (o+pageIndex.value-1 < resultArray.value.length) {
-                        showArray.value[o] = resultArray.value[o+pageIndex.value-1];
-                        console.log(showArray.value);
+                        if (o + pageIndex.value - 1 < resultArray.value.length) {
+                            showArray.value[o] = resultArray.value[o + pageIndex.value - 1];
+                            console.log(showArray.value);
                         }
                     }
                 }
@@ -128,15 +125,62 @@ function toNext() {
         search(pageIndex.value + 1);
     }
 }
+async function favorite(item: any) {
+    const response = await apiClient.post('/apiForChargingStation/favorites/addFavorites', {
+        userId:useUserInfoStore().userInfo.id,
+        address: item.name,
+        longitude: item.location.lng,
+        latitude: item.location.lat
+    });
+    console.log('添加收藏地点成功:', response.data);
+}
+function goToLocation(item: any) {
+    map.clearMap();
+    if (driving) {
+        driving.clear();
+    }
+    if (map) {
+        map.setCenter(useCounterStore().localPlace);
+        map.setZoom(15); // 放大到合适级别
+    }
+    const positionMark = new amap.LngLat(useCounterStore().localPlace[0], useCounterStore().localPlace[1]); //Marker 经纬度
+    const marker = new amap.Marker({
+        position: positionMark, //Marker 经纬度
+        content: markerContent, //将 html 传给 content
+        offset: new amap.Pixel(-13, -30), //以 icon 的 [center bottom] 为原点
+    });
+    map.add(marker);
+    const traffic = new amap.TileLayer.Traffic({
+        autoRefresh: true, //是否自动刷新，默认为false
+        interval: 180, //刷新间隔，默认180s
+    });
+    const startLngLat = [item.location.lng, item.location.lat] //起始点坐标
+
+    //引入和创建驾车规划插件
+    amap.plugin(["AMap.Driving"], function () {
+        driving = new amap.Driving({
+            map: map,
+            panel: "my-panel", //参数值为你页面定义容器的 id 值<div id="my-panel"></div>
+        });
+        //获取起终点规划线路
+        driving.search(useCounterStore().localPlace, startLngLat, function (status: any, result: any) {
+            if (status === "complete") {
+                //status：complete 表示查询成功，no_data 为查询无结果，error 代表查询错误
+                //查询成功时，result 即为对应的驾车导航信息
+                console.log(result);
+            } else {
+                console.log("获取驾车数据失败：" + result);
+            }
+        });
+    });
+    if(isDriving.value){
+        isDriving.value.style.display = 'block';
+    }
+}
 onMounted(() => {
+   
     let latitude = 39.90923; // 纬度
     let longitude = 116.397428; // 经度
-    const contentEl = document.querySelector('.navigation-container')
-    if (contentEl) {
-        contentEl.addEventListener('scroll', handleScroll)
-    } else {
-        console.warn('未找到导航容器元素，无法绑定滚动事件')
-    }
     (window as any)._AMapSecurityConfig = {
         securityJsCode: "d012ab2fd0f0fe0113b39e580923ad17",
     };
@@ -206,7 +250,7 @@ onMounted(() => {
                                             citylimit: true, //是否强制限制在设置的城市内搜索
                                             //location: useCounterStore().localPlace, //设置周边搜索中心点
                                             map: map, //展现结果的地图实例
-                                            panel: "my-panel", //参数值为你页面定义容器的 id 值<div id="my-panel"></div>，结果列表将在此容器中进行展示。
+                                            panel: false, //参数值为你页面定义容器的 id 值<div id="my-panel"></div>，结果列表将在此容器中进行展示。
                                             autoFitView: true, //是否自动调整地图视野使绘制的 Marker 点都处于视口的可见范围
                                         });
                                         placeSearch.searchNearBy("充电站", useCounterStore().localPlace, 5000, function (status: any, result: any) {
@@ -229,6 +273,9 @@ onMounted(() => {
                                                     } else {
                                                         console.log("获取驾车数据失败：" + result);
                                                     }
+                                                    if(isDriving.value){
+        isDriving.value.style.display = 'block';
+    }
                                                 });
                                             });
                                         });  //使用插件搜索关键字并查看结果
@@ -252,6 +299,9 @@ onMounted(() => {
                                             } else {
                                                 console.log("获取驾车数据失败：" + result);
                                             }
+                                            if(isDriving.value){
+        isDriving.value.style.display = 'block';
+    }
                                         });
                                     });
                                     useNavigationStore().clearTrigger();
@@ -312,10 +362,6 @@ onMounted(() => {
 
 });
 onUnmounted(() => {
-    const contentEl = document.querySelector('.content')
-    if (contentEl) {
-        contentEl.removeEventListener('scroll', handleScroll)
-    }
     map?.destroy();
 });
 
@@ -323,7 +369,7 @@ onUnmounted(() => {
 <template>
     <div class="navigation-container">
         <div id="container"></div>
-        <div id="my-panel"></div>
+        <div ref="isDriving" id="my-panel"></div>
         <div class="search">
             <input type="text" v-model="searchInput" placeholder="请输入搜索内容" />
             <button @click="search(false)">搜索</button>
@@ -333,15 +379,20 @@ onUnmounted(() => {
                 <div @click="fucos(item.location.lat, item.location.lng)" class="list_first"
                     v-for="(item, index) in searchResults" :key="index">
                     <div class="list_img"><img :src="item.photos[0].url" alt="图片" /></div>
-                    <div class="list_second"><div>{{ item.name }}</div>
-                    <div>{{ item.address }}</div></div>
-                    <div @click="favorite(item)" style="display: flex; align-items: center; height: 100%;margin-left: auto; flex-shrink: 0;">收藏</div>
+                    <div class="list_second">
+                        <div>{{ item.name }}</div>
+                        <div>{{ item.address }}</div>
+                    </div>
+                    <div class="useful-button">
+                        <div @click="favorite(item)">收藏</div>
+                        <div @click="goToLocation(item)">前往</div>
+                    </div>
                 </div>
             </div>
             <div class="pagination">
                 <button @click="toStart">首页</button>
                 <button @click="toFont">上一页</button>
-                <button @click="search(item)" :disabled="item == pageIndex+1" v-for="(item, index) in showArray"
+                <button @click="search(item)" :disabled="item == pageIndex + 1" v-for="(item, index) in showArray"
                     :key="index">{{ item }}</button>
                 <button @click="toNext">下一页</button>
             </div>
@@ -433,6 +484,7 @@ onUnmounted(() => {
     transition: all 0.3s ease;
     outline: none;
     width: 40vw;
+
     &:focus {
         border-bottom-color: var(--text-soft);
         box-shadow: var(--box-shadow);
@@ -475,9 +527,10 @@ onUnmounted(() => {
     height: fit-content;
     gap: 10px;
     width: 100%;
+
     .list_first {
         display: flex;
-        flex-direction:row;
+        flex-direction: row;
         padding: 10px;
         box-shadow:
             var(--box-shadow);
@@ -489,21 +542,26 @@ onUnmounted(() => {
         color: var(--text-main);
         transition: all 1s ease;
         height: 100px;
+
         &:hover {
             background: var(--button-background);
             color: var(--text-soft);
         }
+
         align-items: center;
+
         div {
             font-weight: 600;
         }
-        .list_second{
+
+        .list_second {
             padding: 10px;
             display: flex;
             flex-direction: column;
         }
-        .list_img{
-            img{
+
+        .list_img {
+            img {
                 width: 80px;
                 height: 80px;
                 border-radius: 8px;
@@ -522,6 +580,7 @@ onUnmounted(() => {
     padding: 10px;
     border-radius: 10px;
     max-width: 100%;
+
     button {
         padding: 10px 10px;
         background: var(--first-background);
@@ -539,18 +598,45 @@ onUnmounted(() => {
     }
 }
 
+.useful-button {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    margin-left: auto;
+    flex-shrink: 0;
+
+    div {
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 10px;
+        border-radius: 10px;
+    }
+
+    div:hover {
+        background: var(--first-background-gradient);
+        color: var(--text-main);
+        cursor: pointer;
+    }
+}
+
 @media(max-width: 768px) {
     .navigation-container {
         overflow-y: scroll;
     }
+
     .search {
         max-width: 100vw;
         width: 100%;
-        input{
+
+        input {
             width: 100%;
         }
+
         box-sizing: border-box;
     }
+
     #my-panel {
         min-width: 100vw;
         min-height: calc(20vh + 56px);
@@ -558,13 +644,16 @@ onUnmounted(() => {
         padding: 0 0 20vh 0;
         overflow: visible;
     }
+
     .search_result {
         position: unset;
         box-sizing: border-box;
         width: 100%;
         top: 80vh;
         padding-bottom: 100px;
+        max-width: 100vw;
     }
+
     #container {
         width: 100vw;
         height: 80vh;
