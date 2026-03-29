@@ -35,7 +35,7 @@ function showRegisterForm() {
 async function handleSubmit() {
     // Handle login logic here
     try {
-        const response = await apiClient.post('http://localhost:8080/apiForChargingStation/user/login', {
+        const response = await apiClient.post('/apiForChargingStation/user/login', {
             username: LoginForm.username,
             password: LoginForm.password
         });
@@ -57,7 +57,7 @@ async function handleSubmit() {
 async function handleRegister() {
     // Handle registration logic here
     try {
-        const response = await apiClient.post('apiForChargingStation/user/register', LoginForm);
+        const response = await apiClient.post('/apiForChargingStation/user/register', LoginForm);
         const responseData = response.data;
         if (responseData.success) {
             alert('Registration successful!');

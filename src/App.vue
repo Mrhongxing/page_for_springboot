@@ -52,7 +52,7 @@ div[class*="router-"] {
 /* 登录页面 */
 .router-Login {
   background-color: #f0f8ff;
-  height: 100vh;
+  height: calc(100vh + 56px);
   width: 100vw;
   position: fixed;
   top: 0;
