@@ -23,6 +23,8 @@ const resultArray = ref([1]);
 const showArray = ref([1]);
 const isDriving = ref<Element>(null);
 function search(data: any) {
+    resultArray.value = [];
+    showArray.value = [];
     map.clearMap();
     if (driving) {
         driving.clear();
@@ -76,6 +78,7 @@ function search(data: any) {
 
                 for (let i = 0; i < Math.floor(result.poiList.count / 5) + 1; i++) {
                     resultArray.value[i] = i + 1;
+                    console.log(resultArray.value);
                 }
 
             }
@@ -86,7 +89,7 @@ function search(data: any) {
                 if (pageIndex.value < 2) {
                     for (let o = 0; o < 4; o++) {
                         showArray.value[o] = resultArray.value[o + pageIndex.value];
-                        console.log(showArray.value);
+                        
                     }
                 } else {
                     for (let o = 0; o < 4; o++) {
@@ -378,7 +381,7 @@ onUnmounted(() => {
             <div class="list">
                 <div @click="fucos(item.location.lat, item.location.lng)" class="list_first"
                     v-for="(item, index) in searchResults" :key="index">
-                    <div class="list_img"><img :src="item.photos[0].url" alt="图片" /></div>
+                    <div v-if="item.photos" class="list_img"><img :src="item.photos[0].url" alt="图片" /></div>
                     <div class="list_second">
                         <div>{{ item.name }}</div>
                         <div>{{ item.address }}</div>

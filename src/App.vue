@@ -21,8 +21,7 @@ const routerclass = computed(() => {
 
   </div>
   <router-view :class="routerclass" />
-  <div v-if="!(route.name?.toString()=='navigation')" class="over">1</div>
-  <div class="bottom-div">1</div>
+  
   <!-- 隐藏在视图外的SVG滤镜 -->
   <svg data-v-7a7a37b1 width="0" height="0" style="position: absolute; left: -9999px; top: -9999px;">
     <defs>
@@ -40,24 +39,18 @@ div[class*="router-"] {
   left: 0;
   top: 0;
   width: 100vw;
- 
-}
-
-.bottom-div {
-  height: calc(100vh + 56px);
-  display: none;
-  
-  /* 导航栏高度 */
+  height: fit-content;
 }
 /* 登录页面 */
 .router-Login {
   background-color: #f0f8ff;
-  height: calc(100vh + 56px);
+  height: 100vh;
   width: 100vw;
   position: fixed;
   top: 0;
   left: 0;
   z-index: 1000;
+  padding-bottom: 0
 }
 
 /* 导航栏（移动端为底部充满）*/
@@ -138,19 +131,13 @@ div[class*="router-"] {
     
   }
 }
+
 @media (max-height: 1000px) {
-  .bottom-div {
-    display:none;
-    position: unset;
-  }
-  .over{
-    position: absolute;
-    top: 100vh;
-    width: 100%;
-    height: 56px;
-    left: 0;
-    top: 100vh;
-    background: var(--page-background);
-  }
+  div[class*="router-"] {
+    height: calc(100vh + 56px);
+}
+div[class*="router-navigation"]  {
+  height: fit-content;
+}
 }
 </style>
