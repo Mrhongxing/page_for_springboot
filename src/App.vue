@@ -52,7 +52,9 @@ div[class*="router-"] {
   z-index: 1000;
   padding-bottom: 0
 }
-
+div[class*="router-Login"]  {
+  height: 100vh;
+}
 /* 导航栏（移动端为底部充满）*/
 .nav-bar {
   position: fixed;
