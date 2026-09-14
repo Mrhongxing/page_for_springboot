@@ -5,7 +5,7 @@ const token = localStorage.getItem('token');
 
 // 创建 Axios 实例
 const apiClient = axios.create({
-  baseURL: 'https://charging.hong.email', // 你的 API 基础 URL
+  baseURL: window.location.origin,
   headers: {
     'Content-Type': 'application/json'
   }
