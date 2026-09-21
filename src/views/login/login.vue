@@ -1,7 +1,7 @@
 <script setup lang="ts" name="login">
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import apiClient from '@/apiClient/apiClient';
+import apiClient, { setAuthToken } from '@/apiClient/apiClient';
 import '@/style/index.css';
 import { useUserInfoStore } from '@/stores/UserInfo';
 
@@ -41,6 +41,7 @@ async function handleSubmit() {
         });
         if (response.data.token) {
             localStorage.setItem('token', 'Bearer ' + response.data.token);
+            setAuthToken(response.data.token);
             alert('登录成功！');
             console.log('Login successful:', response.data);
             const userInfoStore = useUserInfoStore();
