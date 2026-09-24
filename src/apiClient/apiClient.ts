@@ -6,7 +6,7 @@ const token = localStorage.getItem('token');
 // 创建 Axios 实例
 const apiClient = axios.create({
   baseURL: window.location.origin,
-  //baseURL: 'http://www.hong.email:8081', // 替换为你的后端 API 地址
+  //baseURL: 'http://localhost:8081', // 替换为你的后端 API 地址
   headers: {
     'Content-Type': 'application/json'
   }
