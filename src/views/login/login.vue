@@ -39,16 +39,18 @@ async function handleSubmit() {
             username: LoginForm.username,
             password: LoginForm.password
         });
-        if (response.data.token) {
+        if (response.data.id==-1) {
+            alert("密码错误,请重新输入");
+        }
+        else if(response.data.id){
             localStorage.setItem('token', 'Bearer ' + response.data.token);
             setAuthToken(response.data.token);
-            alert('登录成功！');
             console.log('Login successful:', response.data);
             const userInfoStore = useUserInfoStore();
             userInfoStore.setUserInfo(response.data);
             router.push('/car');
         } else {
-            alert("用户名或密码错误");
+            alert("用户名不存在,请重新输入或注册");
         }
     } catch (error) {
         alert("服务器连接异常，请稍后重试");
